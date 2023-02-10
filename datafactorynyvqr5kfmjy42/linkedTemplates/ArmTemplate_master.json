@@ -1,0 +1,98 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "datafactorynyvqr5kfmjy42"
+		},
+		"ArmtemplateStorageLinkedService_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'ArmtemplateStorageLinkedService'"
+		},
+		"AzureBlobStorage1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
+		"azure_storage_demo_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'azure_storage_demo'"
+		},
+		"databrickslinkservice_accessToken": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accessToken' of 'databrickslinkservice'"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://studentadls2.dfs.core.windows.net/"
+		},
+		"AzureSynapsePython_properties_typeProperties_endpoint": {
+			"type": "string",
+			"defaultValue": "https://azuresynapsedemopk.dev.azuresynapse.net"
+		},
+		"databrickslinkservice_properties_typeProperties_existingClusterId": {
+			"type": "string",
+			"defaultValue": "1219-215851-zcvyvljy"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "datafactorynyvqr5kfmjy42_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"ArmtemplateStorageLinkedService_connectionString": {
+						"value": "[parameters('ArmtemplateStorageLinkedService_connectionString')]"
+					},
+					"AzureBlobStorage1_connectionString": {
+						"value": "[parameters('AzureBlobStorage1_connectionString')]"
+					},
+					"AzureDataLakeStorage1_accountKey": {
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					},
+					"azure_storage_demo_connectionString": {
+						"value": "[parameters('azure_storage_demo_connectionString')]"
+					},
+					"databrickslinkservice_accessToken": {
+						"value": "[parameters('databrickslinkservice_accessToken')]"
+					},
+					"AzureDataLakeStorage1_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
+					},
+					"AzureSynapsePython_properties_typeProperties_endpoint": {
+						"value": "[parameters('AzureSynapsePython_properties_typeProperties_endpoint')]"
+					},
+					"databrickslinkservice_properties_typeProperties_existingClusterId": {
+						"value": "[parameters('databrickslinkservice_properties_typeProperties_existingClusterId')]"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

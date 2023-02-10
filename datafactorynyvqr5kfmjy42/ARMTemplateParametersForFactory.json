@@ -1,0 +1,33 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "datafactorynyvqr5kfmjy42"
+		},
+		"ArmtemplateStorageLinkedService_connectionString": {
+			"value": ""
+		},
+		"AzureBlobStorage1_connectionString": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"azure_storage_demo_connectionString": {
+			"value": ""
+		},
+		"databrickslinkservice_accessToken": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://studentadls2.dfs.core.windows.net/"
+		},
+		"AzureSynapsePython_properties_typeProperties_endpoint": {
+			"value": "https://azuresynapsedemopk.dev.azuresynapse.net"
+		},
+		"databrickslinkservice_properties_typeProperties_existingClusterId": {
+			"value": "1219-215851-zcvyvljy"
+		}
+	}
+}
