@@ -1,0 +1,109 @@
+{
+	"name": "worldcupanalysis",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "wcgroups",
+						"type": "DatasetReference"
+					},
+					"name": "wcgroups",
+					"description": "Add wc groups"
+				},
+				{
+					"dataset": {
+						"referenceName": "wcsquad",
+						"type": "DatasetReference"
+					},
+					"name": "wcsquad",
+					"description": "Add squad wc"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "avgwcgoals",
+						"type": "DatasetReference"
+					},
+					"name": "savedata"
+				}
+			],
+			"transformations": [
+				{
+					"name": "groupsquad"
+				},
+				{
+					"name": "squadgoals",
+					"description": "Add goals agg by squad"
+				},
+				{
+					"name": "casttypes"
+				},
+				{
+					"name": "squaddata"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Group as string,",
+				"          Team as string,",
+				"          {FIFA Ranking} as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> wcgroups",
+				"source(output(",
+				"          ID as string,",
+				"          Team as string,",
+				"          Position as string,",
+				"          Player as string,",
+				"          Age as string,",
+				"          Caps as string,",
+				"          Goals as string,",
+				"          {WC Goals} as string,",
+				"          League as string,",
+				"          Club as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> wcsquad",
+				"wcgroups, squaddata join(Team == SquadTeam,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> groupsquad",
+				"casttypes aggregate(groupBy(Player),",
+				"     {WC Goals} = avg({WC Goals})) ~> squadgoals",
+				"groupsquad cast(output(",
+				"          {WC Goals} as integer '000'",
+				"     ),",
+				"     errors: true) ~> casttypes",
+				"wcsquad select(mapColumn(",
+				"          ID,",
+				"          SquadTeam = Team,",
+				"          Position,",
+				"          Player,",
+				"          Age,",
+				"          Caps,",
+				"          Goals,",
+				"          {WC Goals},",
+				"          League,",
+				"          Club",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> squaddata",
+				"squadgoals sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     input(",
+				"          Column_1 as string,",
+				"          Column_2 as string,",
+				"          Column_3 as string",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> savedata"
+			]
+		}
+	}
+}

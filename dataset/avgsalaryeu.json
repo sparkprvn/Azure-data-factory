@@ -1,0 +1,39 @@
+{
+	"name": "avgsalaryeu",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_storage_demo",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Average Net Salary",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "AVG_SALARY.xlsx",
+				"container": "demoazureblob"
+			},
+			"firstRowAsHeader": true
+		},
+		"schema": [
+			{
+				"name": "Year",
+				"type": "String"
+			},
+			{
+				"name": "Month",
+				"type": "String"
+			},
+			{
+				"name": "Average Net Salary RON",
+				"type": "String"
+			},
+			{
+				"name": "County",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

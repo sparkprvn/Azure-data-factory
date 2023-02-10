@@ -1,0 +1,65 @@
+{
+	"name": "wcsquad",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_storage_demo",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "2022_world_cup_squads.csv",
+				"container": "worldcup"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "ID",
+				"type": "String"
+			},
+			{
+				"name": "Team",
+				"type": "String"
+			},
+			{
+				"name": "Position",
+				"type": "String"
+			},
+			{
+				"name": "Player",
+				"type": "String"
+			},
+			{
+				"name": "Age",
+				"type": "String"
+			},
+			{
+				"name": "Caps",
+				"type": "String"
+			},
+			{
+				"name": "Goals",
+				"type": "String"
+			},
+			{
+				"name": "WC Goals",
+				"type": "String"
+			},
+			{
+				"name": "League",
+				"type": "String"
+			},
+			{
+				"name": "Club",
+				"type": "String"
+			}
+		]
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

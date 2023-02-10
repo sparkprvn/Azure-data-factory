@@ -1,0 +1,64 @@
+{
+	"name": "demo_avg_salaries",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "avgsalaryeu",
+						"type": "DatasetReference"
+					},
+					"name": "salarydata"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "avg_salary_by_county",
+						"type": "DatasetReference"
+					},
+					"name": "avgsalarybycounty"
+				}
+			],
+			"transformations": [
+				{
+					"name": "cast1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "AvgbyCounty"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Year as string,",
+				"          Month as string,",
+				"          {Average Net Salary RON} as string,",
+				"          County as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> salarydata",
+				"salarydata cast(output(",
+				"          {Average Net Salary RON} as integer '000'",
+				"     ),",
+				"     errors: true) ~> cast1",
+				"cast1 select(mapColumn(",
+				"          AverageSalary = {Average Net Salary RON},",
+				"          County",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 aggregate(groupBy(County),",
+				"     column1 = avg(AverageSalary)) ~> AvgbyCounty",
+				"AvgbyCounty sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> avgsalarybycounty"
+			]
+		}
+	}
+}

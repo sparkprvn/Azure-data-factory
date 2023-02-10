@@ -1,0 +1,23 @@
+{
+	"name": "avg_salary_eu",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "azure_storage_demo",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Excel",
+		"typeProperties": {
+			"sheetName": "Average Net Salary",
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "AVG_SALARY.xlsx",
+				"container": "demoazureblob"
+			},
+			"range": "",
+			"firstRowAsHeader": true
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}
