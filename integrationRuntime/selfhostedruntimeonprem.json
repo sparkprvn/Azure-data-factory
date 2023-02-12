@@ -1,0 +1,6 @@
+{
+	"name": "selfhostedruntimeonprem",
+	"properties": {
+		"type": "SelfHosted"
+	}
+}
