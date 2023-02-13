@@ -20,6 +20,18 @@
 		"databrickslinkservice_accessToken": {
 			"value": ""
 		},
+		"MySql1_connectionString": {
+			"value": ""
+		},
+		"sqlserveronprem_connectionString": {
+			"value": ""
+		},
+		"SqlServer1_connectionString": {
+			"value": "Integrated Security=True;Data Source=REVATHI-4345;Initial Catalog=master"
+		},
+		"SqlServer1_password": {
+			"value": ""
+		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
 			"value": "https://studentadls2.dfs.core.windows.net/"
 		},
@@ -28,6 +40,9 @@
 		},
 		"databrickslinkservice_properties_typeProperties_existingClusterId": {
 			"value": "1219-215851-zcvyvljy"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"value": "Revathi"
 		}
 	}
 }

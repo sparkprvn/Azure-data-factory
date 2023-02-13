@@ -27,6 +27,23 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'databrickslinkservice'"
 		},
+		"MySql1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'MySql1'"
+		},
+		"sqlserveronprem_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'sqlserveronprem'"
+		},
+		"SqlServer1_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'SqlServer1'",
+			"defaultValue": "Integrated Security=True;Data Source=REVATHI-4345;Initial Catalog=master"
+		},
+		"SqlServer1_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'SqlServer1'"
+		},
 		"AzureDataLakeStorage1_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://studentadls2.dfs.core.windows.net/"
@@ -38,6 +55,10 @@
 		"databrickslinkservice_properties_typeProperties_existingClusterId": {
 			"type": "string",
 			"defaultValue": "1219-215851-zcvyvljy"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "Revathi"
 		},
 		"containerUri": {
 			"type": "string",
@@ -81,6 +102,18 @@
 					"databrickslinkservice_accessToken": {
 						"value": "[parameters('databrickslinkservice_accessToken')]"
 					},
+					"MySql1_connectionString": {
+						"value": "[parameters('MySql1_connectionString')]"
+					},
+					"sqlserveronprem_connectionString": {
+						"value": "[parameters('sqlserveronprem_connectionString')]"
+					},
+					"SqlServer1_connectionString": {
+						"value": "[parameters('SqlServer1_connectionString')]"
+					},
+					"SqlServer1_password": {
+						"value": "[parameters('SqlServer1_password')]"
+					},
 					"AzureDataLakeStorage1_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]"
 					},
@@ -89,10 +122,33 @@
 					},
 					"databrickslinkservice_properties_typeProperties_existingClusterId": {
 						"value": "[parameters('databrickslinkservice_properties_typeProperties_existingClusterId')]"
+					},
+					"SqlServer1_properties_typeProperties_userName": {
+						"value": "[parameters('SqlServer1_properties_typeProperties_userName')]"
 					}
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "datafactorynyvqr5kfmjy42_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'datafactorynyvqr5kfmjy42_ArmTemplate_0')]"
+			]
 		}
 	]
 }
