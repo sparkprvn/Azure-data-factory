@@ -1,17 +1,25 @@
 {
 	"name": "SqlServer1",
-	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
 		"annotations": [],
 		"type": "SqlServer",
 		"typeProperties": {
-			"connectionString": "integrated security=True;data source=REVATHI-4345;initial catalog=master",
+			"connectionString": "Integrated Security=True;Data Source=REVATHI-4345;Initial Catalog=master",
 			"userName": "Revathi",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJkMDRlYTdmNS1mYWU3LTQ5YzktYTc1Yi0yYWFlNjY4OGExM2IiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "akv",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "sqlserverpass",
+				"secretVersion": "d7e528070c764609ac238015b498dbba"
+			}
 		},
 		"connectVia": {
 			"referenceName": "selfhostedruntimeonprem",
 			"type": "IntegrationRuntimeReference"
 		}
-	}
+	},
+	"type": "Microsoft.DataFactory/factories/linkedservices"
 }
