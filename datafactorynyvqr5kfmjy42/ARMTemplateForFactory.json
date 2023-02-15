@@ -11,13 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ArmtemplateStorageLinkedService'"
 		},
-		"AzureBlobStorage1_connectionString": {
+		"SqlServer1_connectionString": {
 			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
-		},
-		"AzureDataLakeStorage1_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+			"metadata": "Secure string for 'connectionString' of 'SqlServer1'",
+			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().ServerName};Initial Catalog=@{linkedService().DBName}"
 		},
 		"azure_storage_demo_connectionString": {
 			"type": "secureString",
@@ -27,38 +24,17 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'databrickslinkservice'"
 		},
-		"MySql1_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'MySql1'"
-		},
-		"sqlserveronprem_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'sqlserveronprem'"
-		},
-		"SqlServer1_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'SqlServer1'",
-			"defaultValue": "Integrated Security=True;Data Source=REVATHI-4345;Initial Catalog=master"
-		},
-		"SqlServer1_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'SqlServer1'"
-		},
-		"AzureDataLakeStorage1_properties_typeProperties_url": {
+		"SqlServer1_properties_typeProperties_userName": {
 			"type": "string",
-			"defaultValue": "https://studentadls2.dfs.core.windows.net/"
+			"defaultValue": "@{linkedService().ServerUser}"
 		},
-		"AzureSynapsePython_properties_typeProperties_endpoint": {
+		"akv_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "https://azuresynapsedemopk.dev.azuresynapse.net"
+			"defaultValue": "https://azkv-43.vault.azure.net/"
 		},
 		"databrickslinkservice_properties_typeProperties_existingClusterId": {
 			"type": "string",
 			"defaultValue": "1219-215851-zcvyvljy"
-		},
-		"SqlServer1_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "Revathi"
 		}
 	},
 	"variables": {
@@ -124,6 +100,116 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ArmtemplateTestDatasetIn')]",
 				"[concat(variables('factoryId'), '/datasets/ArmtemplateTestDatasetOut')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dbdatacopy')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "copydbdata",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "SqlServerSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "SqlServerTable1",
+								"type": "DatasetReference",
+								"parameters": {
+									"ServerName_frompl": {
+										"value": "@pipeline().parameters.ServerName_pipeline",
+										"type": "Expression"
+									},
+									"ServerUser_frompl": {
+										"value": "@pipeline().parameters.ServerUser_pipeline",
+										"type": "Expression"
+									},
+									"ServerPass_frompl": {
+										"value": "@pipeline().parameters.SeverPass_pipeline",
+										"type": "Expression"
+									},
+									"DBName_frompl": {
+										"value": "@pipeline().parameters.DBName_pipeline",
+										"type": "Expression"
+									},
+									"DBTable": {
+										"value": "@pipeline().parameters.DBTable_frompl",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "onpremtocloudtest",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"parameters": {
+					"ServerName_pipeline": {
+						"type": "string"
+					},
+					"DBName_pipeline": {
+						"type": "string"
+					},
+					"ServerUser_pipeline": {
+						"type": "string"
+					},
+					"SeverPass_pipeline": {
+						"type": "string"
+					},
+					"DBTable_frompl": {
+						"type": "String"
+					}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/SqlServerTable1')]",
+				"[concat(variables('factoryId'), '/datasets/onpremtocloudtest')]"
 			]
 		},
 		{
@@ -268,6 +354,65 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/ArmtemplateStorageLinkedService')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "SqlServer1",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"ServerName": {
+							"value": "@dataset().ServerName_frompl",
+							"type": "Expression"
+						},
+						"DBName": {
+							"value": "@dataset().DBName_frompl",
+							"type": "Expression"
+						},
+						"ServerUser": {
+							"value": "@dataset().ServerUser_frompl",
+							"type": "Expression"
+						},
+						"ServerPass": {
+							"value": "@dataset().ServerPass_frompl",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"ServerName_frompl": {
+						"type": "string"
+					},
+					"ServerUser_frompl": {
+						"type": "string"
+					},
+					"ServerPass_frompl": {
+						"type": "string"
+					},
+					"DBName_frompl": {
+						"type": "string"
+					},
+					"DBTable": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().DBTable",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]"
 			]
 		},
 		{
@@ -430,6 +575,39 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/onpremtocloudtest')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azure_storage_demo",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "demoazureblob"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/azure_storage_demo')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/wcgroups')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -553,46 +731,49 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"name": "[concat(parameters('factoryName'), '/SqlServer1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "AzureBlobStorage",
-				"typeProperties": {
-					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+				"parameters": {
+					"ServerName": {
+						"type": "string"
+					},
+					"DBName": {
+						"type": "string"
+					},
+					"ServerUser": {
+						"type": "string"
+					},
+					"ServerPass": {
+						"type": "string"
 					}
+				},
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"connectionString": "[parameters('SqlServer1_connectionString')]",
+					"userName": "[parameters('SqlServer1_properties_typeProperties_userName')]",
+					"password": "@{linkedService().ServerPass}"
+				},
+				"connectVia": {
+					"referenceName": "selfhostedruntimeonprem",
+					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/selfhostedruntimeonprem')]"
+			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureSynapsePython')]",
+			"name": "[concat(parameters('factoryName'), '/akv')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "AzureSynapseArtifacts",
+				"type": "AzureKeyVault",
 				"typeProperties": {
-					"endpoint": "[parameters('AzureSynapsePython_properties_typeProperties_endpoint')]",
-					"authentication": "MSI",
-					"workspaceResourceId": "/subscriptions/30b6b157-27b4-4db5-bdff-d775117e0107/resourceGroups/Azure_Student_PK/providers/Microsoft.Synapse/workspaces/azuresynapsedemopk"
+					"baseUrl": "[parameters('akv_properties_typeProperties_baseUrl')]"
 				}
 			},
 			"dependsOn": []
@@ -625,6 +806,16 @@
 					},
 					"existingClusterId": "[parameters('databrickslinkservice_properties_typeProperties_existingClusterId')]"
 				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/selfhostedruntimeonprem')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
 			},
 			"dependsOn": []
 		},
@@ -812,198 +1003,6 @@
 				"[concat(variables('factoryId'), '/datasets/wcgroups')]",
 				"[concat(variables('factoryId'), '/datasets/wcsquad')]",
 				"[concat(variables('factoryId'), '/datasets/avgwcgoals')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/dbdatacopy')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "copydbdata",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "SqlServerSource",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "SqlServerTable1",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "onpremtocloudtest",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SqlServerTable1')]",
-				"[concat(variables('factoryId'), '/datasets/onpremtocloudtest')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/MySql1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "MySql",
-				"typeProperties": {
-					"connectionString": "[parameters('MySql1_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/selfhostedruntimeonprem')]",
-			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "SelfHosted",
-				"typeProperties": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/sqlserveronprem')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('sqlserveronprem_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "selfhostedruntimeonprem",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/selfhostedruntimeonprem')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SqlServer1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('SqlServer1_connectionString')]",
-					"userName": "[parameters('SqlServer1_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('SqlServer1_password')]"
-					}
-				},
-				"connectVia": {
-					"referenceName": "selfhostedruntimeonprem",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/selfhostedruntimeonprem')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SqlServerTable1')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SqlServer1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "spt_values"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/onpremtocloudtest')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "azure_storage_demo",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "demoazureblob"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"type": "String"
-					},
-					{
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/azure_storage_demo')]"
 			]
 		}
 	]

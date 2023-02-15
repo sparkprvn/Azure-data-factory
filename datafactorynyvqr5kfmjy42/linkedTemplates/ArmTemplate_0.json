@@ -11,14 +11,6 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'ArmtemplateStorageLinkedService'"
 		},
-		"AzureBlobStorage1_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'AzureBlobStorage1'"
-		},
-		"AzureDataLakeStorage1_accountKey": {
-			"type": "secureString",
-			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
-		},
 		"azure_storage_demo_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'azure_storage_demo'"
@@ -27,30 +19,14 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'accessToken' of 'databrickslinkservice'"
 		},
-		"MySql1_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'MySql1'"
-		},
-		"sqlserveronprem_connectionString": {
-			"type": "secureString",
-			"metadata": "Secure string for 'connectionString' of 'sqlserveronprem'"
-		},
 		"SqlServer1_connectionString": {
 			"type": "secureString",
 			"metadata": "Secure string for 'connectionString' of 'SqlServer1'",
-			"defaultValue": "Integrated Security=True;Data Source=REVATHI-4345;Initial Catalog=master"
+			"defaultValue": "Integrated Security=True;Data Source=@{linkedService().ServerName};Initial Catalog=@{linkedService().DBName}"
 		},
-		"SqlServer1_password": {
-			"type": "secureString",
-			"metadata": "Secure string for 'password' of 'SqlServer1'"
-		},
-		"AzureDataLakeStorage1_properties_typeProperties_url": {
+		"akv_properties_typeProperties_baseUrl": {
 			"type": "string",
-			"defaultValue": "https://studentadls2.dfs.core.windows.net/"
-		},
-		"AzureSynapsePython_properties_typeProperties_endpoint": {
-			"type": "string",
-			"defaultValue": "https://azuresynapsedemopk.dev.azuresynapse.net"
+			"defaultValue": "https://azkv-43.vault.azure.net/"
 		},
 		"databrickslinkservice_properties_typeProperties_existingClusterId": {
 			"type": "string",
@@ -58,7 +34,7 @@
 		},
 		"SqlServer1_properties_typeProperties_userName": {
 			"type": "string",
-			"defaultValue": "Revathi"
+			"defaultValue": "@{linkedService().ServerUser}"
 		}
 	},
 	"variables": {
@@ -79,46 +55,14 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/AzureBlobStorage1')]",
+			"name": "[concat(parameters('factoryName'), '/akv')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"annotations": [],
-				"type": "AzureBlobStorage",
+				"type": "AzureKeyVault",
 				"typeProperties": {
-					"connectionString": "[parameters('AzureBlobStorage1_connectionString')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
-					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/AzureSynapsePython')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureSynapseArtifacts",
-				"typeProperties": {
-					"endpoint": "[parameters('AzureSynapsePython_properties_typeProperties_endpoint')]",
-					"authentication": "MSI",
-					"workspaceResourceId": "/subscriptions/30b6b157-27b4-4db5-bdff-d775117e0107/resourceGroups/Azure_Student_PK/providers/Microsoft.Synapse/workspaces/azuresynapsedemopk"
+					"baseUrl": "[parameters('akv_properties_typeProperties_baseUrl')]"
 				}
 			},
 			"dependsOn": []
@@ -150,19 +94,6 @@
 						"value": "[parameters('databrickslinkservice_accessToken')]"
 					},
 					"existingClusterId": "[parameters('databrickslinkservice_properties_typeProperties_existingClusterId')]"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/MySql1')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "MySql",
-				"typeProperties": {
-					"connectionString": "[parameters('MySql1_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -384,6 +315,39 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/onpremtocloudtest')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "azure_storage_demo",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "demoazureblob"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"type": "String"
+					},
+					{
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/azure_storage_demo')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/wcgroups')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -494,38 +458,30 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/sqlserveronprem')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "SqlServer",
-				"typeProperties": {
-					"connectionString": "[parameters('sqlserveronprem_connectionString')]"
-				},
-				"connectVia": {
-					"referenceName": "selfhostedruntimeonprem",
-					"type": "IntegrationRuntimeReference"
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/integrationRuntimes/selfhostedruntimeonprem')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/SqlServer1')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
+				"parameters": {
+					"ServerName": {
+						"type": "string"
+					},
+					"DBName": {
+						"type": "string"
+					},
+					"ServerUser": {
+						"type": "string"
+					},
+					"ServerPass": {
+						"type": "string"
+					}
+				},
 				"annotations": [],
 				"type": "SqlServer",
 				"typeProperties": {
 					"connectionString": "[parameters('SqlServer1_connectionString')]",
 					"userName": "[parameters('SqlServer1_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('SqlServer1_password')]"
-					}
+					"password": "@{linkedService().ServerPass}"
 				},
 				"connectVia": {
 					"referenceName": "selfhostedruntimeonprem",
@@ -537,36 +493,309 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/onpremtocloudtest')]",
+			"name": "[concat(parameters('factoryName'), '/ArmtemplateSampleCopyPipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "MyCopyActivity",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "BinarySource",
+								"storeSettings": {
+									"type": "AzureBlobStorageReadSettings",
+									"recursive": true
+								}
+							},
+							"sink": {
+								"type": "BinarySink",
+								"storeSettings": {
+									"type": "AzureBlobStorageWriteSettings"
+								}
+							},
+							"enableStaging": false
+						},
+						"inputs": [
+							{
+								"referenceName": "ArmtemplateTestDatasetIn",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ArmtemplateTestDatasetOut",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2022-12-18T12:01:46Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ArmtemplateTestDatasetIn')]",
+				"[concat(variables('factoryId'), '/datasets/ArmtemplateTestDatasetOut')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServerTable1')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "azure_storage_demo",
-					"type": "LinkedServiceReference"
+					"referenceName": "SqlServer1",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"ServerName": {
+							"value": "@dataset().ServerName_frompl",
+							"type": "Expression"
+						},
+						"DBName": {
+							"value": "@dataset().DBName_frompl",
+							"type": "Expression"
+						},
+						"ServerUser": {
+							"value": "@dataset().ServerUser_frompl",
+							"type": "Expression"
+						},
+						"ServerPass": {
+							"value": "@dataset().ServerPass_frompl",
+							"type": "Expression"
+						}
+					}
 				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobStorageLocation",
-						"container": "demoazureblob"
+				"parameters": {
+					"ServerName_frompl": {
+						"type": "string"
 					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"quoteChar": "\""
-				},
-				"schema": [
-					{
-						"type": "String"
+					"ServerUser_frompl": {
+						"type": "string"
 					},
-					{
+					"ServerPass_frompl": {
+						"type": "string"
+					},
+					"DBName_frompl": {
+						"type": "string"
+					},
+					"DBTable": {
 						"type": "String"
 					}
-				]
+				},
+				"annotations": [],
+				"type": "SqlServerTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": {
+						"value": "@dataset().DBTable",
+						"type": "Expression"
+					}
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/azure_storage_demo')]"
+				"[concat(variables('factoryId'), '/linkedServices/SqlServer1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/demo_avg_salaries')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "avgsalaryeu",
+								"type": "DatasetReference"
+							},
+							"name": "salarydata"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "avg_salary_by_county",
+								"type": "DatasetReference"
+							},
+							"name": "avgsalarybycounty"
+						}
+					],
+					"transformations": [
+						{
+							"name": "cast1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "AvgbyCounty"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Year as string,",
+						"          Month as string,",
+						"          {Average Net Salary RON} as string,",
+						"          County as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> salarydata",
+						"salarydata cast(output(",
+						"          {Average Net Salary RON} as integer '000'",
+						"     ),",
+						"     errors: true) ~> cast1",
+						"cast1 select(mapColumn(",
+						"          AverageSalary = {Average Net Salary RON},",
+						"          County",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 aggregate(groupBy(County),",
+						"     column1 = avg(AverageSalary)) ~> AvgbyCounty",
+						"AvgbyCounty sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> avgsalarybycounty"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/avgsalaryeu')]",
+				"[concat(variables('factoryId'), '/datasets/avg_salary_by_county')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/worldcupanalysis')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "wcgroups",
+								"type": "DatasetReference"
+							},
+							"name": "wcgroups",
+							"description": "Add wc groups"
+						},
+						{
+							"dataset": {
+								"referenceName": "wcsquad",
+								"type": "DatasetReference"
+							},
+							"name": "wcsquad",
+							"description": "Add squad wc"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "avgwcgoals",
+								"type": "DatasetReference"
+							},
+							"name": "savedata"
+						}
+					],
+					"transformations": [
+						{
+							"name": "groupsquad"
+						},
+						{
+							"name": "squadgoals",
+							"description": "Add goals agg by squad"
+						},
+						{
+							"name": "casttypes"
+						},
+						{
+							"name": "squaddata"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Group as string,",
+						"          Team as string,",
+						"          {FIFA Ranking} as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> wcgroups",
+						"source(output(",
+						"          ID as string,",
+						"          Team as string,",
+						"          Position as string,",
+						"          Player as string,",
+						"          Age as string,",
+						"          Caps as string,",
+						"          Goals as string,",
+						"          {WC Goals} as string,",
+						"          League as string,",
+						"          Club as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> wcsquad",
+						"wcgroups, squaddata join(Team == SquadTeam,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> groupsquad",
+						"casttypes aggregate(groupBy(Player),",
+						"     {WC Goals} = avg({WC Goals})) ~> squadgoals",
+						"groupsquad cast(output(",
+						"          {WC Goals} as integer '000'",
+						"     ),",
+						"     errors: true) ~> casttypes",
+						"wcsquad select(mapColumn(",
+						"          ID,",
+						"          SquadTeam = Team,",
+						"          Position,",
+						"          Player,",
+						"          Age,",
+						"          Caps,",
+						"          Goals,",
+						"          {WC Goals},",
+						"          League,",
+						"          Club",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> squaddata",
+						"squadgoals sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          Column_1 as string,",
+						"          Column_2 as string,",
+						"          Column_3 as string",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> savedata"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/wcgroups')]",
+				"[concat(variables('factoryId'), '/datasets/wcsquad')]",
+				"[concat(variables('factoryId'), '/datasets/avgwcgoals')]"
 			]
 		}
 	]

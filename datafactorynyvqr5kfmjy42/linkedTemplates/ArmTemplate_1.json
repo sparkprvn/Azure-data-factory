@@ -13,359 +13,6 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/ArmtemplateSampleCopyPipeline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "MyCopyActivity",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "BinarySource",
-								"storeSettings": {
-									"type": "AzureBlobStorageReadSettings",
-									"recursive": true
-								}
-							},
-							"sink": {
-								"type": "BinarySink",
-								"storeSettings": {
-									"type": "AzureBlobStorageWriteSettings"
-								}
-							},
-							"enableStaging": false
-						},
-						"inputs": [
-							{
-								"referenceName": "ArmtemplateTestDatasetIn",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ArmtemplateTestDatasetOut",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2022-12-18T12:01:46Z"
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/demo_avg_salaries')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "avgsalaryeu",
-								"type": "DatasetReference"
-							},
-							"name": "salarydata"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "avg_salary_by_county",
-								"type": "DatasetReference"
-							},
-							"name": "avgsalarybycounty"
-						}
-					],
-					"transformations": [
-						{
-							"name": "cast1"
-						},
-						{
-							"name": "select1"
-						},
-						{
-							"name": "AvgbyCounty"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Year as string,",
-						"          Month as string,",
-						"          {Average Net Salary RON} as string,",
-						"          County as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> salarydata",
-						"salarydata cast(output(",
-						"          {Average Net Salary RON} as integer '000'",
-						"     ),",
-						"     errors: true) ~> cast1",
-						"cast1 select(mapColumn(",
-						"          AverageSalary = {Average Net Salary RON},",
-						"          County",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 aggregate(groupBy(County),",
-						"     column1 = avg(AverageSalary)) ~> AvgbyCounty",
-						"AvgbyCounty sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> avgsalarybycounty"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/worldcupanalysis')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "wcgroups",
-								"type": "DatasetReference"
-							},
-							"name": "wcgroups",
-							"description": "Add wc groups"
-						},
-						{
-							"dataset": {
-								"referenceName": "wcsquad",
-								"type": "DatasetReference"
-							},
-							"name": "wcsquad",
-							"description": "Add squad wc"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "avgwcgoals",
-								"type": "DatasetReference"
-							},
-							"name": "savedata"
-						}
-					],
-					"transformations": [
-						{
-							"name": "groupsquad"
-						},
-						{
-							"name": "squadgoals",
-							"description": "Add goals agg by squad"
-						},
-						{
-							"name": "casttypes"
-						},
-						{
-							"name": "squaddata"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Group as string,",
-						"          Team as string,",
-						"          {FIFA Ranking} as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> wcgroups",
-						"source(output(",
-						"          ID as string,",
-						"          Team as string,",
-						"          Position as string,",
-						"          Player as string,",
-						"          Age as string,",
-						"          Caps as string,",
-						"          Goals as string,",
-						"          {WC Goals} as string,",
-						"          League as string,",
-						"          Club as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false) ~> wcsquad",
-						"wcgroups, squaddata join(Team == SquadTeam,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> groupsquad",
-						"casttypes aggregate(groupBy(Player),",
-						"     {WC Goals} = avg({WC Goals})) ~> squadgoals",
-						"groupsquad cast(output(",
-						"          {WC Goals} as integer '000'",
-						"     ),",
-						"     errors: true) ~> casttypes",
-						"wcsquad select(mapColumn(",
-						"          ID,",
-						"          SquadTeam = Team,",
-						"          Position,",
-						"          Player,",
-						"          Age,",
-						"          Caps,",
-						"          Goals,",
-						"          {WC Goals},",
-						"          League,",
-						"          Club",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> squaddata",
-						"squadgoals sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     input(",
-						"          Column_1 as string,",
-						"          Column_2 as string,",
-						"          Column_3 as string",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> savedata"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SqlServerTable1')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SqlServer1",
-					"type": "LinkedServiceReference"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "spt_values"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/demo_pipeline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Avgsalarybycounty",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "demo_avg_salaries",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"salarydata": {},
-									"avgsalarybycounty": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2023-02-07T18:16:38Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/demo_avg_salaries')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/wcanalysis')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "wcanalysis",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "worldcupanalysis",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"wcgroups": {},
-									"wcsquad": {},
-									"savedata": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {},
-					"cancelAfter": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2023-02-08T11:41:29Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/worldcupanalysis')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/dbdatacopy')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -414,7 +61,28 @@
 							{
 								"referenceName": "SqlServerTable1",
 								"type": "DatasetReference",
-								"parameters": {}
+								"parameters": {
+									"ServerName_frompl": {
+										"value": "@pipeline().parameters.ServerName_pipeline",
+										"type": "Expression"
+									},
+									"ServerUser_frompl": {
+										"value": "@pipeline().parameters.ServerUser_pipeline",
+										"type": "Expression"
+									},
+									"ServerPass_frompl": {
+										"value": "@pipeline().parameters.SeverPass_pipeline",
+										"type": "Expression"
+									},
+									"DBName_frompl": {
+										"value": "@pipeline().parameters.DBName_pipeline",
+										"type": "Expression"
+									},
+									"DBTable": {
+										"value": "@pipeline().parameters.DBTable_frompl",
+										"type": "Expression"
+									}
+								}
 							}
 						],
 						"outputs": [
@@ -430,11 +98,119 @@
 					"elapsedTimeMetric": {},
 					"cancelAfter": {}
 				},
+				"parameters": {
+					"ServerName_pipeline": {
+						"type": "string"
+					},
+					"DBName_pipeline": {
+						"type": "string"
+					},
+					"ServerUser_pipeline": {
+						"type": "string"
+					},
+					"SeverPass_pipeline": {
+						"type": "string"
+					},
+					"DBTable_frompl": {
+						"type": "String"
+					}
+				},
 				"annotations": []
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/SqlServerTable1')]"
-			]
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/demo_pipeline')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Avgsalarybycounty",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "demo_avg_salaries",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"salarydata": {},
+									"avgsalarybycounty": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-02-07T18:16:38Z"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/wcanalysis')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "wcanalysis",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "worldcupanalysis",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"wcgroups": {},
+									"wcsquad": {},
+									"savedata": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {},
+					"cancelAfter": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2023-02-08T11:41:29Z"
+			},
+			"dependsOn": []
 		}
 	]
 }

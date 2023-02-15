@@ -8,11 +8,8 @@
 		"ArmtemplateStorageLinkedService_connectionString": {
 			"value": ""
 		},
-		"AzureBlobStorage1_connectionString": {
-			"value": ""
-		},
-		"AzureDataLakeStorage1_accountKey": {
-			"value": ""
+		"SqlServer1_connectionString": {
+			"value": "Integrated Security=True;Data Source=@{linkedService().ServerName};Initial Catalog=@{linkedService().DBName}"
 		},
 		"azure_storage_demo_connectionString": {
 			"value": ""
@@ -20,29 +17,14 @@
 		"databrickslinkservice_accessToken": {
 			"value": ""
 		},
-		"MySql1_connectionString": {
-			"value": ""
+		"SqlServer1_properties_typeProperties_userName": {
+			"value": "@{linkedService().ServerUser}"
 		},
-		"sqlserveronprem_connectionString": {
-			"value": ""
-		},
-		"SqlServer1_connectionString": {
-			"value": "Integrated Security=True;Data Source=REVATHI-4345;Initial Catalog=master"
-		},
-		"SqlServer1_password": {
-			"value": ""
-		},
-		"AzureDataLakeStorage1_properties_typeProperties_url": {
-			"value": "https://studentadls2.dfs.core.windows.net/"
-		},
-		"AzureSynapsePython_properties_typeProperties_endpoint": {
-			"value": "https://azuresynapsedemopk.dev.azuresynapse.net"
+		"akv_properties_typeProperties_baseUrl": {
+			"value": "https://azkv-43.vault.azure.net/"
 		},
 		"databrickslinkservice_properties_typeProperties_existingClusterId": {
 			"value": "1219-215851-zcvyvljy"
-		},
-		"SqlServer1_properties_typeProperties_userName": {
-			"value": "Revathi"
 		},
 		"containerUri": {
 			"value": ""
