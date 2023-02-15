@@ -55,6 +55,20 @@
 				]
 			}
 		],
+		"parameters": {
+			"ServerName_pipeline": {
+				"type": "string"
+			},
+			"DBName_pipeline": {
+				"type": "string"
+			},
+			"ServerUser_pipeline": {
+				"type": "string"
+			},
+			"SeverPass_pipeline": {
+				"type": "string"
+			}
+		},
 		"annotations": []
 	}
 }
