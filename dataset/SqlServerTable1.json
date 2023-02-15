@@ -3,14 +3,52 @@
 	"properties": {
 		"linkedServiceName": {
 			"referenceName": "SqlServer1",
-			"type": "LinkedServiceReference"
+			"type": "LinkedServiceReference",
+			"parameters": {
+				"ServerName": {
+					"value": "@dataset().ServerName_frompl",
+					"type": "Expression"
+				},
+				"DBName": {
+					"value": "@dataset().DBName_frompl",
+					"type": "Expression"
+				},
+				"ServerUser": {
+					"value": "@dataset().ServerUser_frompl",
+					"type": "Expression"
+				},
+				"ServerPass": {
+					"value": "@dataset().ServerPass_frompl",
+					"type": "Expression"
+				}
+			}
+		},
+		"parameters": {
+			"ServerName_frompl": {
+				"type": "string"
+			},
+			"ServerUser_frompl": {
+				"type": "string"
+			},
+			"ServerPass_frompl": {
+				"type": "string"
+			},
+			"DBName_frompl": {
+				"type": "string"
+			},
+			"DBTable": {
+				"type": "String"
+			}
 		},
 		"annotations": [],
 		"type": "SqlServerTable",
 		"schema": [],
 		"typeProperties": {
 			"schema": "dbo",
-			"table": "spt_values"
+			"table": {
+				"value": "@dataset().DBTable",
+				"type": "Expression"
+			}
 		}
 	}
 }
