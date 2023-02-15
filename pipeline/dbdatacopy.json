@@ -44,7 +44,29 @@
 				"inputs": [
 					{
 						"referenceName": "SqlServerTable1",
-						"type": "DatasetReference"
+						"type": "DatasetReference",
+						"parameters": {
+							"ServerName_frompl": {
+								"value": "@pipeline().parameters.ServerName_pipeline",
+								"type": "Expression"
+							},
+							"ServerUser_frompl": {
+								"value": "@pipeline().parameters.ServerUser_pipeline",
+								"type": "Expression"
+							},
+							"ServerPass_frompl": {
+								"value": "@pipeline().parameters.SeverPass_pipeline",
+								"type": "Expression"
+							},
+							"DBName_frompl": {
+								"value": "@pipeline().parameters.DBName_pipeline",
+								"type": "Expression"
+							},
+							"DBTable": {
+								"value": "@pipeline().parameters.DBTable_frompl",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"outputs": [
@@ -67,6 +89,9 @@
 			},
 			"SeverPass_pipeline": {
 				"type": "string"
+			},
+			"DBTable_frompl": {
+				"type": "String"
 			}
 		},
 		"annotations": []
