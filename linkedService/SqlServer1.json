@@ -2,12 +2,26 @@
 	"name": "SqlServer1",
 	"type": "Microsoft.DataFactory/factories/linkedservices",
 	"properties": {
+		"parameters": {
+			"ServerName": {
+				"type": "string"
+			},
+			"DBName": {
+				"type": "string"
+			},
+			"ServerUser": {
+				"type": "string"
+			},
+			"ServerPass": {
+				"type": "string"
+			}
+		},
 		"annotations": [],
 		"type": "SqlServer",
 		"typeProperties": {
-			"connectionString": "integrated security=True;data source=REVATHI-4345;initial catalog=master",
-			"userName": "Revathi",
-			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiI4ZmE5NTQ5Zi1kZjE0LTRkNWMtYTk4NS04MzA3NWQ5ZDE4ZjciLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+			"connectionString": "Integrated Security=True;Data Source=@{linkedService().ServerName};Initial Catalog=@{linkedService().DBName}",
+			"userName": "@{linkedService().ServerUser}",
+			"password": "@{linkedService().ServerPass}"
 		},
 		"connectVia": {
 			"referenceName": "selfhostedruntimeonprem",
